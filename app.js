@@ -9,7 +9,7 @@ const mt=document.querySelector('#mt');
 const mp=document.querySelector('#mp');
 const search=document.querySelector('#search');
 const idea=document.querySelector('#idea');
-let showingAll=false;
+let showingAll=true;
 
 function renderCities(){
   g.innerHTML='';
@@ -17,17 +17,24 @@ function renderCities(){
   visible.forEach(c=>{
     const b=document.createElement('button');
     b.className='city';
+    b.type='button';
+    b.setAttribute('aria-label',`Explore events in ${c[0]}`);
     b.innerHTML=`<i>${c[2]}</i><b>${c[0]}</b><small>${c[1]} · Explore events →</small>`;
     b.onclick=()=>openM(`Explore ${c[0]}`,`Start your search for free events, concerts, festivals and things to do in ${c[0]}. Live listings can be connected when the approved event data source is ready.`);
     g.appendChild(b);
   });
 }
+function updateCityToggle(){
+  const button=document.querySelector('.text-button');
+  if(button) button.textContent=showingAll?'Show fewer cities ↑':'View all cities →';
+}
 renderCities();
+updateCityToggle();
 
 function showAllCities(){
   showingAll=!showingAll;
   renderCities();
-  document.querySelector('.text-button').textContent=showingAll?'Show fewer cities ↑':'View all cities →';
+  updateCityToggle();
 }
 function openM(t,p){mt.textContent=t;mp.textContent=p;modal.classList.add('show')}
 function closeM(){modal.classList.remove('show')}
@@ -36,9 +43,10 @@ function go(){
   const q=search.value.trim()||'events near you';
   openM(`Searching: ${q}`,`Your search is ready. The next platform upgrade can connect approved live event data and eligible affiliate links to relevant results.`);
 }
-function quick(q){search.value=q;go()}
+function quick(q){search.value=q;window.scrollTo({top:0,behavior:'smooth'});setTimeout(go,350)}
 search.addEventListener('keydown',e=>{if(e.key==='Enter')go()});
 modal.addEventListener('click',e=>{if(e.target===modal)closeM()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeM()});
 const ideas=[
   'Find a local outdoor movie, market, museum day or community festival.',
   'Build a last-minute plan around live music, food and a new neighborhood.',
