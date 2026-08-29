@@ -1,0 +1,1 @@
+# Eventstarget\n\nThe Impact/Ticketmaster verification meta tag is already inside index.html. Deploy as a Render Static Site (publish directory: .), connect eventstarget.com, then return to the verification screen and click Verify Website. This starter does not invent live events; real listings should be connected only from an approved data/API source.
