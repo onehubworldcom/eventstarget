@@ -1,5 +1,6 @@
 const express=require('express');
 const path=require('path');
+const fs=require('fs');
 const app=express();
 const PORT=process.env.PORT||3000;
 
@@ -12,11 +13,20 @@ app.use((req,res,next)=>{
 });
 app.use(express.static(__dirname));
 
-// Serve the single-page app for clean SEO landing URLs such as
-// /live-music-in-miami. The browser-side app reads the slug and updates
-// the page title, H1, description and event search.
+// Clean SEO landing URLs use the same app shell, with month/year metadata
+// injected into the HTML before it is sent to search-engine crawlers.
 app.get(/^\/(?!api(?:\/|$)|.*\.(?:js|css|xml|txt|svg|ico|png|jpg|jpeg|webp|json)$).+/, (req,res)=>{
-  res.sendFile(path.join(__dirname,'index.html'));
+  const slug=req.path.replace(/^\/+|\/+$/g,'');
+  const phrase=slug.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const now=new Date();
+  const month=now.toLocaleString('en-US',{month:'long'});
+  const year=now.getFullYear();
+  const title=`${phrase} – ${month} ${year} | EventsTarget`;
+  const description=`Find upcoming ${phrase.toLowerCase()} during ${month} ${year}. Explore event dates, venues and ticket information on EventsTarget.`;
+  let html=fs.readFileSync(path.join(__dirname,'index.html'),'utf8');
+  const injected=`<script>document.title=${JSON.stringify(title)};document.addEventListener('DOMContentLoaded',function(){var h=document.querySelector('.hero h1');if(h)h.innerHTML=${JSON.stringify(phrase+'<br><span>'+month+' '+year+'</span>')};var p=document.querySelector('.hero-copy p');if(p)p.textContent=${JSON.stringify('Discover '+phrase.toLowerCase()+' and upcoming plans in '+month+' '+year+'.')};var d=document.querySelector('meta[name="description"]');if(d)d.content=${JSON.stringify(description)};var c=document.querySelector('link[rel="canonical"]');if(c)c.href=${JSON.stringify('https://eventstarget.com/'+slug)};var s=document.querySelector('#search');if(s){s.value=${JSON.stringify(phrase)};setTimeout(function(){if(typeof go==='function')go()},0)}});</script>`;
+  html=html.replace('</head>',injected+'</head>');
+  res.type('html').send(html);
 });
 
 function isoDate(d){return d.toISOString().slice(0,10);}
