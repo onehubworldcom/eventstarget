@@ -1,4 +1,5 @@
 const express=require('express');
+const path=require('path');
 const app=express();
 const PORT=process.env.PORT||3000;
 
@@ -10,6 +11,13 @@ app.use((req,res,next)=>{
   next();
 });
 app.use(express.static(__dirname));
+
+// Serve the single-page app for clean SEO landing URLs such as
+// /live-music-in-miami. The browser-side app reads the slug and updates
+// the page title, H1, description and event search.
+app.get(/^\/(?!api(?:\/|$)|.*\.(?:js|css|xml|txt|svg|ico|png|jpg|jpeg|webp|json)$).+/, (req,res)=>{
+  res.sendFile(path.join(__dirname,'index.html'));
+});
 
 function isoDate(d){return d.toISOString().slice(0,10);}
 function weekendRange(){
